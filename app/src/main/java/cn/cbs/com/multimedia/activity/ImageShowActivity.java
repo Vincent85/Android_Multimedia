@@ -42,6 +42,7 @@ public class ImageShowActivity extends Activity implements SurfaceHolder.Callbac
 
     private void displayInIV() {
         mIv.setImageResource(R.drawable.beauty);
+        mIv.setAdjustViewBounds(true);
     }
 
     private void drawInSrv() {
