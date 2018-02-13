@@ -29,6 +29,12 @@
                 android:layout_height="600dp"
                 android:layout_marginTop="20dp"
                 />
+
+            <cn.cbs.com.multimedia.view.CustomImageView
+                android:id="@+id/civ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"/>
         </LinearLayout>
 
     </ScrollView>

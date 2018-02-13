@@ -11,6 +11,7 @@ import android.view.SurfaceView;
 import android.widget.ImageView;
 
 import cn.cbs.com.multimedia.R;
+import cn.cbs.com.multimedia.view.CustomImageView;
 
 /**
  * Created by cbs on 2018/2/13.
@@ -22,6 +23,8 @@ public class ImageShowActivity extends Activity implements SurfaceHolder.Callbac
     SurfaceView mSfv;
 
     SurfaceHolder mHolder;
+
+    CustomImageView mCiv;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +41,8 @@ public class ImageShowActivity extends Activity implements SurfaceHolder.Callbac
         mSfv = findViewById(R.id.sfv);
 
         mSfv.getHolder().addCallback(this);
+
+        mCiv = findViewById(R.id.civ);
     }
 
     private void displayInIV() {
