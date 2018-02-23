@@ -1,10 +1,10 @@
-package cn.cbs.com.multimedia.view.opengl.view;
+package cn.cbs.com.multimedia.opengl.view;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
-import cn.cbs.com.multimedia.view.opengl.renderer.MyGLRenderer;
+import cn.cbs.com.multimedia.opengl.renderer.MyGLRenderer;
 
 /**
  * Created by cbs on 2018/2/23.
