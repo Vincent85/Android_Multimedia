@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
 import cn.cbs.com.multimedia.opengl.renderer.MyGLRenderer;
+import cn.cbs.com.multimedia.opengl.renderer.TextureRenderer;
 
 /**
  * Created by cbs on 2018/2/23.
@@ -12,7 +13,7 @@ import cn.cbs.com.multimedia.opengl.renderer.MyGLRenderer;
 
 public class MyGLSurfaceView extends GLSurfaceView {
 
-    private MyGLRenderer mRenderer;
+    private Renderer mRenderer;
 
     public MyGLSurfaceView(Context context) {
         this(context,null);
@@ -27,7 +28,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
     }
 
     private void initRenderer() {
-        mRenderer = new MyGLRenderer(getContext());
+//        mRenderer = new MyGLRenderer(getContext());
+        mRenderer = new TextureRenderer(getContext());
         setRenderer(mRenderer);
 //        setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
