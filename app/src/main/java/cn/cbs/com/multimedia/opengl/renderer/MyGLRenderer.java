@@ -27,9 +27,11 @@ import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform4f;
+import static android.opengl.GLES20.glUniformMatrix4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
 import static android.opengl.GLES20.glViewport;
+import static android.opengl.Matrix.orthoM;
 
 /**
  * Created by cbs on 2018/2/23.
@@ -44,10 +46,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     private static final String A_POSITION = "a_Position";
     private static final String A_COLOR = "a_Color";
+    private static final String u_Matrix = "u_Matrix";
     private int aColorLocation;
     private int aPositionLocation;
+    private int uMatrixLocation;
 
     private final FloatBuffer vertexData;
+    private final float[] projectionMatrix = new float[16];
 
     private Context mContext;
 
@@ -59,19 +64,19 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         float verticies[] = {
                 //Triangle fan,Order of coordinates X,Y,R,G,B
                 0.0f,0.0f,   1f,  1f,  1f,
-                -0.5f,-0.5f, 0.7f,0.7f,0.7f,
-                0.5f,-0.5f,  0.7f,0.7f,0.7f,
-                0.5f,0.5f,   0.7f,0.7f,0.7f,
-                -0.5f,0.5f,  0.7f,0.7f,0.7f,
-                -0.5f,-0.5f, 0.7f,0.7f,0.7f,
+                -0.5f,-0.8f, 0.7f,0.7f,0.7f,
+                0.5f,-0.8f,  0.7f,0.7f,0.7f,
+                0.5f,0.8f,   0.7f,0.7f,0.7f,
+                -0.5f,0.8f,  0.7f,0.7f,0.7f,
+                -0.5f,-0.8f, 0.7f,0.7f,0.7f,
 
                 // line
                 -0.5f,0.0f,  1f,0f,0f,
                 0.5f,0f,     1f,0f,0f,
 
                 //mallets
-                0f,-0.25f,   0f,0f,1f,
-                0f,0.25f,    1f,0f,0f
+                0f,-0.4f,   0f,0f,1f,
+                0f,0.4f,    1f,0f,0f
         };
         vertexData = ByteBuffer
                 .allocateDirect(verticies.length * BYTES_PER_FLOAT)
@@ -108,11 +113,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         glVertexAttribPointer(aColorLocation, COLOR_COMPONENT_COUNT, GL_FLOAT, false, STRIDE, vertexData);
         glEnableVertexAttribArray(aColorLocation);
 
+        uMatrixLocation = glGetUniformLocation(mProgramID, u_Matrix);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         glClear(GL_COLOR_BUFFER_BIT);
+        glUniformMatrix4fv(uMatrixLocation, 1, false, projectionMatrix, 0);
 
         glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 
@@ -127,6 +134,15 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0, 0, width, height);
 
+        final float aspectRatio = width > height ? (float)width / (float)height
+                                                    : (float)height / (float)width;
 
+        if (width > height) {
+            //Landscape
+            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+        }else {
+            //portrait
+            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+        }
     }
 }
