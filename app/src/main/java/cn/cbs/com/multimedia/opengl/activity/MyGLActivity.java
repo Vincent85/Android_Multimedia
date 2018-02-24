@@ -12,6 +12,7 @@ import cn.cbs.com.multimedia.opengl.view.MyGLSurfaceView;
 public class MyGLActivity extends Activity {
 
     private MyGLSurfaceView mGLView;
+    private boolean isRendererSet = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -21,4 +22,15 @@ public class MyGLActivity extends Activity {
         setContentView(mGLView);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        mGLView.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mGLView.onResume();
+    }
 }

@@ -2,6 +2,7 @@ package cn.cbs.com.multimedia.opengl.renderer;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,6 +13,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import cn.cbs.com.multimedia.R;
 import cn.cbs.com.multimedia.util.LoggerUtil;
+import cn.cbs.com.multimedia.util.MatrixHelper;
 import cn.cbs.com.multimedia.util.ShaderHelper;
 import cn.cbs.com.multimedia.util.TextResourceReader;
 
@@ -26,12 +28,16 @@ import static android.opengl.GLES20.glDrawArrays;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
 import static android.opengl.GLES20.glGetUniformLocation;
-import static android.opengl.GLES20.glUniform4f;
 import static android.opengl.GLES20.glUniformMatrix4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
 import static android.opengl.GLES20.glViewport;
+import static android.opengl.Matrix.multiplyMM;
 import static android.opengl.Matrix.orthoM;
+import static android.opengl.Matrix.perspectiveM;
+import static android.opengl.Matrix.rotateM;
+import static android.opengl.Matrix.setIdentityM;
+import static android.opengl.Matrix.translateM;
 
 /**
  * Created by cbs on 2018/2/23.
@@ -52,6 +58,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private int uMatrixLocation;
 
     private final FloatBuffer vertexData;
+    private final float[] modelMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
 
     private Context mContext;
@@ -63,12 +70,12 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         mContext = context;
         float verticies[] = {
                 //Triangle fan,Order of coordinates X,Y,R,G,B
-                0.0f,0.0f,   1f,  1f,  1f,
-                -0.5f,-0.8f, 0.7f,0.7f,0.7f,
-                0.5f,-0.8f,  0.7f,0.7f,0.7f,
-                0.5f,0.8f,   0.7f,0.7f,0.7f,
-                -0.5f,0.8f,  0.7f,0.7f,0.7f,
-                -0.5f,-0.8f, 0.7f,0.7f,0.7f,
+                0.0f,0.0f,     1f,  1f,  1f,
+                -0.5f,-0.8f,   0.7f,0.7f,0.7f,
+                0.5f,-0.8f,    0.7f,0.7f,0.7f,
+                0.5f,0.8f,     0.7f,0.7f,0.7f,
+                -0.5f,0.8f,    0.7f,0.7f,0.7f,
+                -0.5f,-0.8f,   0.7f,0.7f,0.7f,
 
                 // line
                 -0.5f,0.0f,  1f,0f,0f,
@@ -134,15 +141,27 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0, 0, width, height);
 
-        final float aspectRatio = width > height ? (float)width / (float)height
-                                                    : (float)height / (float)width;
+//        final float aspectRatio = width > height ? (float)width / (float)height
+//                                                    : (float)height / (float)width;
+//
+//        if (width > height) {
+//            //Landscape
+//            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+//        }else {
+//            //portrait
+//            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+//        }
+        MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width / (float) height, 1f, 10f);
+//        perspectiveM(projectionMatrix, 0, 45, (float) width / (float) height, 1f, 10f);
 
-        if (width > height) {
-            //Landscape
-            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
-        }else {
-            //portrait
-            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
-        }
+        setIdentityM(modelMatrix, 0);
+        translateM(modelMatrix, 0, 0f, 0f, -3f);
+        //Add rotation
+        rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
+
+        //multiply the model matrix and the projection matrix
+        final float[] temp = new float[16];
+        multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
     }
 }
