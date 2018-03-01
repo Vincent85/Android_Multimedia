@@ -23,6 +23,7 @@ import static android.opengl.GLUtils.texImage2D;
 
 public class TextureHelper {
     private static final String TAG = "TextureHelper";
+
     public static int loadTexture(Context context, int resourceID) {
         final int[] textureObjectIDs = new int[1];
         glGenTextures(1, textureObjectIDs, 0);

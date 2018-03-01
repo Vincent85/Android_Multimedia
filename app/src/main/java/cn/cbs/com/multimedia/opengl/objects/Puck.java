@@ -1,28 +1,25 @@
 package cn.cbs.com.multimedia.opengl.objects;
 
-
 import java.util.List;
 
 import cn.cbs.com.multimedia.opengl.data.VertexArray;
 import cn.cbs.com.multimedia.opengl.programs.ColorShaderProgram;
 
 /**
- * Created by cbs on 2018/2/24.
+ * Created by cbs on 2018/3/1.
  */
 
-public class Mallet {
+public class Puck {
+    private static final int POSITION_COMPONENT_COUNT = 3;
 
-    private static final int POSITION_COMPONENT_COUNT  = 3;
-
-    private final float radius;
-    private final float height;
+    public final float radius,height;
 
     private final VertexArray vertexArray;
     private final List<ObjectBuilder.DrawCommand> drawList;
 
-    public Mallet(float radius, float height, int numPointsAroundMallet) {
-        ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createMallet(
-                new Geometry.Point(0f, 0f, 0f), radius, height, numPointsAroundMallet);
+    public Puck(float radius, float height, int numPointsAroundPuck) {
+        ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createPuck(
+                new Geometry.Cylinder(new Geometry.Point(0f, 0f, 0f), radius, height), numPointsAroundPuck);
 
         this.radius = radius;
         this.height = height;
@@ -41,9 +38,5 @@ public class Mallet {
         for (ObjectBuilder.DrawCommand command : drawList) {
             command.draw();
         }
-    }
-
-    public float getHeight() {
-        return height;
     }
 }

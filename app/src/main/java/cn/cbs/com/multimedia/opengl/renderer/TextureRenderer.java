@@ -8,6 +8,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import cn.cbs.com.multimedia.R;
 import cn.cbs.com.multimedia.opengl.objects.Mallet;
+import cn.cbs.com.multimedia.opengl.objects.Puck;
 import cn.cbs.com.multimedia.opengl.objects.Table;
 import cn.cbs.com.multimedia.opengl.programs.ColorShaderProgram;
 import cn.cbs.com.multimedia.opengl.programs.TextureShaderProgram;
@@ -21,6 +22,7 @@ import static android.opengl.GLES20.glViewport;
 import static android.opengl.Matrix.multiplyMM;
 import static android.opengl.Matrix.rotateM;
 import static android.opengl.Matrix.setIdentityM;
+import static android.opengl.Matrix.setLookAtM;
 import static android.opengl.Matrix.translateM;
 
 /**
@@ -29,8 +31,13 @@ import static android.opengl.Matrix.translateM;
 
 public class TextureRenderer implements GLSurfaceView.Renderer {
 
+    private final float[] viewMatrix = new float[16];
+    private final float[] viewProjectionMatrix = new float[16];
+    private final float[] modelViewProjetionMatrix = new float[16];
+
     private final Context mContext;
 
+    private Puck mPuck;
     private Table mTable;
     private Mallet mMallet;
 
@@ -51,7 +58,8 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         mTable = new Table();
-        mMallet = new Mallet();
+        mMallet = new Mallet(0.08f, 0.15f, 32);
+        mPuck = new Puck(0.06f, 0.02f, 32);
 
         mTextureShaderProgram = new TextureShaderProgram(mContext);
         mColorShaderProgram = new ColorShaderProgram(mContext);
@@ -76,31 +84,74 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width / (float) height, 1f, 10f);
 //        perspectiveM(projectionMatrix, 0, 45, (float) width / (float) height, 1f, 10f);
 
-        setIdentityM(modelMatrix, 0);
-        translateM(modelMatrix, 0, 0f, 0f, -3f);
-        //Add rotation
-        rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
-
-        //multiply the model matrix and the projection matrix
-        final float[] temp = new float[16];
-        multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
-        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
+        setLookAtM(viewMatrix, 0,
+                0f, 1.5f, 2.5f,
+                0f, 0f, 0f,
+                0f, 1f, 0f);
+//        setIdentityM(modelMatrix, 0);
+//        translateM(modelMatrix, 0, 0f, 0f, -3f);
+//        //Add rotation
+//        rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
+//
+//        //multiply the model matrix and the projection matrix
+//        final float[] temp = new float[16];
+//        multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+//        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //Draw the table
+        multiplyMM(viewProjectionMatrix,0,projectionMatrix,0,viewMatrix,0);
+
+        //draw the table
+        positionTableInScene();
         mTextureShaderProgram.useProgram();
-        mTextureShaderProgram.setUniforms(projectionMatrix, mTexture);
+        mTextureShaderProgram.setUniforms(modelViewProjetionMatrix, mTexture);
         mTable.bindData(mTextureShaderProgram);
         mTable.draw();
 
-        //Draw the mallets
+        //draw the first mallet
+        positionObjectInScene(0f, mMallet.getHeight() / 2f, -0.4f);
         mColorShaderProgram.useProgram();
-        mColorShaderProgram.setUniforms(projectionMatrix);
+        mColorShaderProgram.setUniforms(modelViewProjetionMatrix, 0f, 0f, 1f);
         mMallet.bindData(mColorShaderProgram);
         mMallet.draw();
+
+        //draw the second mallet
+        positionObjectInScene(0f, mMallet.getHeight() / 2, 0.4f);
+        mColorShaderProgram.setUniforms(modelViewProjetionMatrix, 0f, 0f, 1f);
+        mMallet.draw();
+
+        //draw the puck
+        positionObjectInScene(0f, mPuck.height / 2, 0f);
+        mColorShaderProgram.setUniforms(modelViewProjetionMatrix, 0.8f, 0.8f, 1f);
+        mPuck.bindData(mColorShaderProgram);
+        mPuck.draw();
+
+//        //Draw the table
+//        mTextureShaderProgram.useProgram();
+//        mTextureShaderProgram.setUniforms(projectionMatrix, mTexture);
+//        mTable.bindData(mTextureShaderProgram);
+//        mTable.draw();
+//
+//        //Draw the mallets
+//        mColorShaderProgram.useProgram();
+//        mColorShaderProgram.setUniforms(projectionMatrix);
+//        mMallet.bindData(mColorShaderProgram);
+//        mMallet.draw();
+    }
+
+    private void positionTableInScene() {
+        setIdentityM(modelMatrix, 0);
+        rotateM(modelMatrix, 0, -90f, 1f, 0f, 0f);
+        multiplyMM(modelViewProjetionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0);
+    }
+
+    private void positionObjectInScene(float x, float y, float z) {
+        setIdentityM(modelMatrix, 0);
+        translateM(modelMatrix, 0, x, y, z);
+        multiplyMM(modelViewProjetionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0);
     }
 }
