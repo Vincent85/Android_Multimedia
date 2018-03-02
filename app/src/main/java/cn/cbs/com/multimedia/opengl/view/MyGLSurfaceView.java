@@ -24,13 +24,13 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
         // Create an OpenGL ES 2.0 context
         setEGLContextClientVersion(2);
-        initRenderer();
+//        initRenderer();
     }
 
-    private void initRenderer() {
-//        mRenderer = new MyGLRenderer(getContext());
-        mRenderer = new TextureRenderer(getContext());
-        setRenderer(mRenderer);
-//        setRenderMode(RENDERMODE_WHEN_DIRTY);
-    }
+//    private void initRenderer() {
+////        mRenderer = new MyGLRenderer(getContext());
+//        mRenderer = new TextureRenderer(getContext());
+//        setRenderer(mRenderer);
+////        setRenderMode(RENDERMODE_WHEN_DIRTY);
+//    }
 }

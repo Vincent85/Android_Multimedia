@@ -2,6 +2,7 @@ package cn.cbs.com.multimedia.opengl.renderer;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -30,6 +31,8 @@ import static android.opengl.Matrix.translateM;
  */
 
 public class TextureRenderer implements GLSurfaceView.Renderer {
+
+    private static final String TAG = "TextureRenderer";
 
     private final float[] viewMatrix = new float[16];
     private final float[] viewProjectionMatrix = new float[16];
@@ -153,5 +156,13 @@ public class TextureRenderer implements GLSurfaceView.Renderer {
         setIdentityM(modelMatrix, 0);
         translateM(modelMatrix, 0, x, y, z);
         multiplyMM(modelViewProjetionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0);
+    }
+
+    public void handleTouchPressed(float normalizedX, float normalizedY) {
+        Log.d(TAG, "handleTouchPressed in x= " + normalizedX + ",y= " + normalizedY);
+    }
+
+    public void handleTouchDrag(float normalizedX, float normalizedY) {
+        Log.d(TAG, "handleTouchDrag in x= " + normalizedX + ",y= " + normalizedY);
     }
 }
