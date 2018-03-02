@@ -32,6 +32,7 @@ public class GLPreviewSurfaceView extends GLSurfaceView implements SurfaceTextur
 
     public GLPreviewSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setEGLContextClientVersion(2);
         initRenderer();
     }
 
@@ -143,4 +144,5 @@ public class GLPreviewSurfaceView extends GLSurfaceView implements SurfaceTextur
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
         showCameraPreview();
     }
+
 }
