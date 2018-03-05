@@ -59,10 +59,14 @@ public class CameraManager {
         }
     }
 
-    /**
-     * 开始预览
-     * 预览纹理绑定到SurfaceTexture
-     */
+    public Camera getCamera() {
+        return mCamera;
+    }
+
+//    /**
+//     * 开始预览
+//     * 预览纹理绑定到SurfaceTexture
+//     */
 //    public void startPreview() {
 //        if (null != mCamera) {
 //            //创建纹理
@@ -108,7 +112,7 @@ public class CameraManager {
 
         Camera.Size size = getOptimalPreviewSize(sizes);
         parameters.setPreviewSize(size.width, size.height);
-
+        Log.d(TAG, "preview size width = " + size.width + ",height = " + size.height);
         mCamera.setParameters(parameters);
     }
 

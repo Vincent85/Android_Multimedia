@@ -23,7 +23,6 @@ public class CameraPreviewActivity extends Activity {
 
     boolean useFrontCamera = true;
 
-    private CameraManager mCameraManager;
     private final int PERMISSION_REQUEST_CODE = 100;
 
     @Override
@@ -33,7 +32,6 @@ public class CameraPreviewActivity extends Activity {
         mPreviewView = new GLPreviewSurfaceView(getApplicationContext());
         setContentView(mPreviewView);
 
-        mCameraManager = CameraManager.getInstance();
 
         //检查摄像头权限
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -64,17 +62,6 @@ public class CameraPreviewActivity extends Activity {
         super.onResume();
         mPreviewView.onResume();
     }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-//        CameraManager.getInstance().releaseCamera();
-    }
-
-//    @Override
-//    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-//        mPreviewView.showCameraPreview(surfaceTexture);
-//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,

@@ -1,10 +1,13 @@
 package cn.cbs.com.multimedia.camera;
 
 import android.content.Context;
+import android.graphics.Camera;
+import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -17,12 +20,15 @@ import cn.cbs.com.multimedia.util.CameraManager;
 import cn.cbs.com.multimedia.util.ShaderHelper;
 import cn.cbs.com.multimedia.util.TextResourceReader;
 
+import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_FALSE;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TRIANGLE_FAN;
 import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
+import static android.opengl.GLES20.glClear;
+import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glDrawArrays;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGenTextures;
@@ -48,6 +54,10 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
 
     private int mProgram;
+
+    private SurfaceTexture mInputTexture;
+    private SurfaceTexture.OnFrameAvailableListener mOnFrameListener;
+
     private int[] mTextureIDs = new int[1];
 
     private int mVertexPosLoc;
@@ -73,10 +83,15 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
     };
 
     private float[] mTexturePos = new float[] {
-            0.0f,0.0f,
+//            0.0f,0.0f,
+//            0.0f,1.0f,
+//            1.0f,1.0f,
+//            1.0f,0.0f
+
             0.0f,1.0f,
             1.0f,1.0f,
-            1.0f,0.0f
+            1.0f,0.0f,
+            0.0f,0.0f
     };
 
     public GLPreviewRenderer(Context context) {
@@ -88,6 +103,19 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
         //gen texture id
         glGenTextures(1, mTextureIDs, 0);
         Log.d(TAG, "texture id = " + mTextureIDs[0]);
+        mInputTexture = new SurfaceTexture(mTextureIDs[0]);
+        mInputTexture.setOnFrameAvailableListener(mOnFrameListener);
+
+        //open and start camera preview
+        CameraManager.getInstance().openCamera(false);
+        android.hardware.Camera camera = CameraManager.getInstance().getCamera();
+        try {
+            camera.setPreviewTexture(mInputTexture);
+            camera.startPreview();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         mProgram = ShaderHelper.buildProgram(
                 TextResourceReader.readTextFileFromRes(mContext, R.raw.preview_vertex_shader),
                 TextResourceReader.readTextFileFromRes(mContext, R.raw.preview_fragment_shader));
@@ -110,7 +138,7 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
                 .put(mVertexPos);
         positionBuffer.position(0);
 
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * BYTES_PER_FLOAT, positionBuffer);
+        glVertexAttribPointer(mVertexPosLoc, 2, GL_FLOAT, false, 2 * BYTES_PER_FLOAT, positionBuffer);
         glEnableVertexAttribArray(mVertexPosLoc);
 
         //bind and enable texture attribute
@@ -121,7 +149,7 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
                 .put(mTexturePos);
         textureBuffer.position(0);
 
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * BYTES_PER_FLOAT, textureBuffer);
+        glVertexAttribPointer(mTexPosLoc, 2, GL_FLOAT, false, 2 * BYTES_PER_FLOAT, textureBuffer);
         glEnableVertexAttribArray(mTexPosLoc);
 
     }
@@ -130,30 +158,42 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0,0,width,height);
 
-        //set uniform matrix
-        setIdentityM(mMVPMatrix,0);
-
-        glUniformMatrix4fv(mMVPMatrixLoc, 1, false, mMVPMatrix, 0);
-        glUniformMatrix4fv(mTexMatrixLoc, 1, false, mTexMatrix, 0);
-
         //bind texture
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GLES11Ext.GL_TEXTURE_BINDING_EXTERNAL_OES, mTextureIDs[0]);
         glUniform1i(mTextureLoc, 0);
-
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
+
+        //set uniform matrix
+        setIdentityM(mMVPMatrix,0);
+//        setIdentityM(mTexMatrix,0);
+        mInputTexture.updateTexImage();
+        mInputTexture.getTransformMatrix(mTexMatrix);
+        glUniformMatrix4fv(mMVPMatrixLoc, 1, false, mMVPMatrix, 0);
+        glUniformMatrix4fv(mTexMatrixLoc, 1, false, mTexMatrix, 0);
+
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     }
 
-    public void setTexTransMatrix(float[] matrix) {
-        mTexMatrix = matrix;
+
+    public void setOnFrameListener(SurfaceTexture.OnFrameAvailableListener mOnFrameListener) {
+        this.mOnFrameListener = mOnFrameListener;
+    }
+
+    public SurfaceTexture getInputTexture() {
+        return mInputTexture;
+    }
+
+    public float[] getTexMatrix() {
+        return mTexMatrix;
     }
 
     public int getTextureID() {
         return mTextureIDs[0];
     }
+
 
 }
