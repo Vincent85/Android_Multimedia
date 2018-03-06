@@ -1,9 +1,11 @@
 package cn.cbs.com.multimedia.util;
 
+import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+import android.view.Surface;
 
 import java.io.IOException;
 import java.util.List;
@@ -61,6 +63,32 @@ public class CameraManager {
 
     public Camera getCamera() {
         return mCamera;
+    }
+
+    public void setCameraDisplayOrientation(Activity activity,
+                                                   int cameraId, android.hardware.Camera camera) {
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = activity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+        Log.d(TAG, "degrees = " + degrees + ",info.orientation = " + info.orientation);
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(result);
     }
 
 //    /**
@@ -121,7 +149,7 @@ public class CameraManager {
         return sizes.get(0);
     }
 
-    private int getCameraID(boolean isFront) {
+    public int getCameraID(boolean isFront) {
         int cameraCount = Camera.getNumberOfCameras();
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
 

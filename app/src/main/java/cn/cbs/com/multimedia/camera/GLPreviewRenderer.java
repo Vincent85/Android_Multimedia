@@ -1,8 +1,8 @@
 package cn.cbs.com.multimedia.camera;
 
-import android.content.Context;
-import android.graphics.Camera;
+import android.app.Activity;
 import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.opengl.GLES11Ext;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
@@ -20,15 +20,11 @@ import cn.cbs.com.multimedia.util.CameraManager;
 import cn.cbs.com.multimedia.util.ShaderHelper;
 import cn.cbs.com.multimedia.util.TextResourceReader;
 
-import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES20.GL_FALSE;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TRIANGLE_FAN;
 import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
-import static android.opengl.GLES20.glClear;
-import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glDrawArrays;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGenTextures;
@@ -51,7 +47,7 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
 
     private static final int BYTES_PER_FLOAT = Float.SIZE / 8;
 
-    private Context mContext;
+    private Activity mActivity;
 
     private int mProgram;
 
@@ -83,19 +79,19 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
     };
 
     private float[] mTexturePos = new float[] {
-//            0.0f,0.0f,
-//            0.0f,1.0f,
-//            1.0f,1.0f,
-//            1.0f,0.0f
-
+            0.0f,0.0f,
             0.0f,1.0f,
             1.0f,1.0f,
-            1.0f,0.0f,
-            0.0f,0.0f
+            1.0f,0.0f
+
+//            0.0f,1.0f,
+//            1.0f,1.0f,
+//            1.0f,0.0f,
+//            0.0f,0.0f
     };
 
-    public GLPreviewRenderer(Context context) {
-        this.mContext = context;
+    public GLPreviewRenderer(Activity context) {
+        this.mActivity = context;
     }
 
     @Override
@@ -109,16 +105,24 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
         //open and start camera preview
         CameraManager.getInstance().openCamera(false);
         android.hardware.Camera camera = CameraManager.getInstance().getCamera();
+        CameraManager.getInstance().setCameraDisplayOrientation(
+                mActivity,CameraManager.getInstance().getCameraID(false),camera);
         try {
             camera.setPreviewTexture(mInputTexture);
             camera.startPreview();
+            camera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera camera) {
+                    Log.d(TAG, "onAutoFocus success = " + success);
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         mProgram = ShaderHelper.buildProgram(
-                TextResourceReader.readTextFileFromRes(mContext, R.raw.preview_vertex_shader),
-                TextResourceReader.readTextFileFromRes(mContext, R.raw.preview_fragment_shader));
+                TextResourceReader.readTextFileFromRes(mActivity, R.raw.preview_vertex_shader),
+                TextResourceReader.readTextFileFromRes(mActivity, R.raw.preview_fragment_shader));
 
         glUseProgram(mProgram);
 
@@ -169,7 +173,6 @@ public class GLPreviewRenderer implements GLSurfaceView.Renderer {
 
         //set uniform matrix
         setIdentityM(mMVPMatrix,0);
-//        setIdentityM(mTexMatrix,0);
         mInputTexture.updateTexImage();
         mInputTexture.getTransformMatrix(mTexMatrix);
         glUniformMatrix4fv(mMVPMatrixLoc, 1, false, mMVPMatrix, 0);

@@ -1,5 +1,6 @@
 package cn.cbs.com.multimedia.camera;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLSurfaceView;
@@ -18,6 +19,7 @@ public class GLPreviewSurfaceView extends GLSurfaceView implements SurfaceTextur
     public static final String TAG = "GLPreviewSurfaceView";
 
     private GLPreviewRenderer mRenderer;
+    private Activity mActivity;
 
     public GLPreviewSurfaceView(Context context) {
         this(context,null);
@@ -26,12 +28,13 @@ public class GLPreviewSurfaceView extends GLSurfaceView implements SurfaceTextur
     public GLPreviewSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setEGLContextClientVersion(2);
+        mActivity = (Activity) context;
         initRenderer();
     }
 
     private void initRenderer() {
         if (null == mRenderer) {
-            mRenderer = new GLPreviewRenderer(getContext());
+            mRenderer = new GLPreviewRenderer(mActivity);
             mRenderer.setOnFrameListener(this);
         }
         setRenderer(mRenderer);

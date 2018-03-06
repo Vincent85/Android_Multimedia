@@ -29,7 +29,7 @@ public class CameraPreviewActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mPreviewView = new GLPreviewSurfaceView(getApplicationContext());
+        mPreviewView = new GLPreviewSurfaceView(this);
         setContentView(mPreviewView);
 
 
